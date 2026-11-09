@@ -52,6 +52,8 @@ test("new fields support password keyboard toggling, country selection, and post
 test("calendar drafts cancel with Escape, apply, clear and restore focus", async ({
   page,
 }) => {
+  // Keep the browser's current month aligned with the fixed demo dates.
+  await page.clock.setFixedTime(new Date("2026-10-12T12:00:00Z"));
   await page.goto("/");
   const trigger = page.locator('[data-test="demo-calendar"]');
   await trigger.focus();
