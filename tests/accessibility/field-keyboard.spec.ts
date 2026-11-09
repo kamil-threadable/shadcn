@@ -204,3 +204,38 @@ test("icon actions support keyboard activation, tooltips and disabled explanatio
   await page.getByTestId("demo-action-processing-toggle").uncheck();
   await expect(action).toBeEnabled();
 });
+
+test("custom field errors preserve their link, keyboard order and responsive text size", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const input = page.locator('[data-test="demo-custom-error-input"]');
+  const error = page.locator("#demo-custom-error-error");
+  const link = error.getByRole("link", { name: "Contact support" });
+  await expect(input).toHaveAttribute(
+    "aria-errormessage",
+    "demo-custom-error-error",
+  );
+  await expect(error).toHaveAttribute("role", "alert");
+  await expect(link).toHaveAttribute("href", "mailto:support@example.com");
+  await input.focus();
+  await page.keyboard.press("Tab");
+  await expect(link).toBeFocused();
+  const sizes = [];
+  for (const width of [375, 1024]) {
+    await page.setViewportSize({ width, height: 900 });
+    const inputSize = await input.evaluate(
+      (element) => getComputedStyle(element).fontSize,
+    );
+    const errorSize = await error.evaluate(
+      (element) => getComputedStyle(element).fontSize,
+    );
+    const linkSize = await link.evaluate(
+      (element) => getComputedStyle(element).fontSize,
+    );
+    expect(inputSize).toBe(errorSize);
+    expect(linkSize).toBe(errorSize);
+    sizes.push(errorSize);
+  }
+  expect(sizes[0]).toBe(sizes[1]);
+});
